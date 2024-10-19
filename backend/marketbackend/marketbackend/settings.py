@@ -140,8 +140,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'sk-proj-VAgvWcnZu0N8ErjNvuu2T3BlbkFJggOpCXvxUkTUQnJfcNQy')
 
-AWS_ACCESS_KEY_ID =  "AKIAW3MEAPLQROK7IKHS"
-AWS_SECRET_ACCESS_KEY = "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"
-AWS_REGION = 'ap-south-1'
