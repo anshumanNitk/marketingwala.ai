@@ -13,8 +13,8 @@ import { ChevronDown, Search, Bell, Settings, LogOut, Home, BarChart2, Users, Fi
 
 import { motion, AnimatePresence } from 'framer-motion'
 import MarketingCampaignInputForm from './form'
-// import Generator from './generator'
-// import InstagramDashboard from './monitor'
+import Generator from './generator'
+import InstagramDashboard from './monitor'
 
 
 
@@ -57,13 +57,12 @@ export default function Dashboard() {
         case 'Home':
           return <div>
             <h2> Generate Instagram Posts</h2>
-            {/* <Generator/> */}
+            <Generator/>
           </div>;
         case 'A/B':
           return <div>A/B Testing Component</div>;
         case 'Monitoring':
-          // return <div><InstagramDashboard/></div>;
-          <h2>Monitor</h2>
+          return <div><InstagramDashboard/></div>;
         default:
           return null;
       }
