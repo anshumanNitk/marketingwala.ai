@@ -15,8 +15,19 @@ import firebase_admin
 from firebase_admin import credentials, messaging
 import boto3
 import requests
+from dotenv import load_dotenv
 
+load_dotenv()
 
+# Access the variables and store them in settings.py variables
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_REGION = os.getenv('AWS_REGION')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+API_BASE_URL1 = os.getenv('API_BASE_URL')
+AUTH_HEADER = os.getenv('AUTH_HEADER')
+FACEBOOK_TOKEN = os.getenv("FACEBOOK_TOKEN")
+FCM_TOKEN = os.getenv('FCM_TOKEN')
 
 def decode_base64_image(encoded_image):
     """
@@ -34,13 +45,13 @@ def save_image(decoded_image, filename="uploaded_image.png"):
         f.write(decoded_image)
     return filename
 
-openai.api_key = settings.OPENAI_API_KEY
+openai.api_key = OPENAI_API_KEY
 
 class CampaignContentGeneratorView(APIView):
     def post(self, request):
-        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
-        API_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/9da34f1aeb1cceb708acb4bdf74a6741/ai/run/"
-        headers = {"Authorization": "Bearer cgP5gR39hoGEFXkOJNYISwjDJyIQr4FTXJWV4KJe"}
+        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        API_BASE_URL = API_BASE_URL1
+        headers = {"Authorization": AUTH_HEADER}
         
         # Extract data from the request
         content_preferences = request.data.get('contentPreferences', {})
@@ -201,9 +212,9 @@ class SubmitUpdatedCampaignView(APIView):
 
         # Step 3: Upload the local JPEG image to S3
         s3 = boto3.client('s3',
-                          aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                          aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                          region_name=settings.AWS_REGION)
+                          aws_access_key_id=AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                          region_name=AWS_REGION)
 
         s3_bucket_name = 'marketwala2'
         s3_file_name = 'AImarket.jpeg'  # Fixed file name for S3
@@ -228,7 +239,7 @@ class SubmitUpdatedCampaignView(APIView):
         params = {
             "url": f"https://marketwala2.s3.ap-south-1.amazonaws.com/{s3_file_name}",  # URL of the image to be posted
             "caption": f"{request.data.get('caption')}",
-            "access_token": "ehpsqpATS-OwHdCToPkffh:APA91bF_IgAv-x2LgfFRbDkIXvFflCFeVsm5arY90KSvBBYyc6gchS98klTCNGjgzyo6UBEtFdDR1b76hKs8Qj3i-JRlNyFdA51IeZABpWRoDRsAI2aJnc0EIEgcBhJ8SozU3weWi_73"
+            "access_token": FACEBOOK_TOKEN
         }
 
         # Make the POST request
@@ -256,7 +267,7 @@ class FetchCampaignDataView(APIView):
 class FetchNotificationDataView(APIView):
     def post(self,request):
         try:
-            client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+            client = openai.OpenAI(api_key=OPENAI_API_KEY)
             content_preferences = request.data.get('contentPreferences', {})
             caption_variation1_prompt =  (
     f"Generate a captivating and engaging push notification message for a social media post. "
@@ -294,11 +305,11 @@ class FetchNotificationDataView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
-cred = credentials.Certificate(r"C:\Users\Anshuman\OneDrive - National Institute of Technology Karnataka, Surathkal\Desktop\my-hack-prod\backend\marketbackend\contentcreation\marketfcm2-firebase-adminsdk-q4z7u-e91f2f94ef.json")
+cred = credentials.Certificate(r"C:\Users\Anshuman\OneDrive - National Institute of Technology Karnataka, Surathkal\Desktop\my-hack-prod\backend\marketbackend\marketfcm2-firebase-adminsdk-q4z7u-e91f2f94ef.json")
 firebase_admin.initialize_app(cred)
 
 # This registration token comes from the client FCM SDKs.
-registration_token = 'dDfn7ul4SdirR5qISLlBIO:APA91bEWXUS3pFUPYeofxRj1OD3WhbVE9Zb8zyD3xLWEh0FxXOMnnxmeCPzg-NVnU6B6d1EnD9ZbSQmVDzG5YvdeOLUWWGVMv28K23rSgKZWlmWHkuL_bq1X8w99X6Ii_zgY7BKCaECu'
+registration_token = FCM_TOKEN
 
 # Function to send a single push notification
 def sendPush(title, msg, registration_token, dataObject=None):
