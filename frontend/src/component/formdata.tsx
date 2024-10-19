@@ -20,16 +20,9 @@ export interface FormData {
   contentPreferences: {
     purpose: string;
     scriptDescription: string;
-    characters: string;
-    styleDetails: string;
-    backgroundInfo: string;
     additionalItems: string;
     inPostText: string;
     template: string;
-    visualAesthetic: string;
-    colorScheme: string;
-    typography: string;
-    texturePatterns: string;
     postTheme: string;
     tone: string;
     contentType: string;
@@ -37,6 +30,7 @@ export interface FormData {
     creativeStyle: string;
     personalization: string[];
     uploadedImages: string[];
+    PostNotification: string;
   };
   campaignScheduling: {
     startDate: Date | null;
@@ -51,7 +45,6 @@ export interface FormData {
     demographics: string[];
     behaviorDateRange: { start: Date | null; end: Date | null };
     interests: string[];
-    engagementData: string;
     preferredChannels: string[];
   };
   brandGuidelines: {
@@ -96,7 +89,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               onChange={(e) => handleInputChange('contentPreferences', 'scriptDescription', e.target.value)}
             />
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="characters">Characters</Label>
             <Input
               id="characters"
@@ -104,8 +97,8 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               placeholder="Enter characters (e.g., brand ambassador, product mascots)"
               onChange={(e) => handleInputChange('contentPreferences', 'characters', e.target.value)}
             />
-          </div>
-          <div className="space-y-2">
+          </div> */}
+          {/* <div className="space-y-2">
             <Label htmlFor="styleDetails">Angles, Style, Camera Details</Label>
             <Input
               id="styleDetails"
@@ -113,8 +106,8 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               placeholder="Specify angles, styles, and camera-related preferences"
               onChange={(e) => handleInputChange('contentPreferences', 'styleDetails', e.target.value)}
             />
-          </div>
-          <div className="space-y-2">
+          </div> */}
+          {/* <div className="space-y-2">
             <Label htmlFor="backgroundInfo">Background Information</Label>
             <Input
               id="backgroundInfo"
@@ -122,7 +115,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               placeholder="Provide context or background setting"
               onChange={(e) => handleInputChange('contentPreferences', 'backgroundInfo', e.target.value)}
             />
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="additionalItems">Additional Items</Label>
             <Input
@@ -155,7 +148,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
       return (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Content Style</h2>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="visualAesthetic">Visual Aesthetic</Label>
             <Input
               id="visualAesthetic"
@@ -163,8 +156,8 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               placeholder="Describe the desired aesthetic (e.g., bright, dark, dynamic)"
               onChange={(e) => handleInputChange('contentPreferences', 'visualAesthetic', e.target.value)}
             />
-          </div>
-          <div className="space-y-2">
+          </div> */}
+          {/* <div className="space-y-2">
             <Label htmlFor="colorScheme">Color Scheme</Label>
             <Input
               id="colorScheme"
@@ -181,8 +174,8 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               placeholder="Font details (e.g., bold, minimalist, casual)"
               onChange={(e) => handleInputChange('contentPreferences', 'typography', e.target.value)}
             />
-          </div>
-          <div className="space-y-2">
+          </div> */}
+          {/* <div className="space-y-2">
             <Label htmlFor="texturePatterns">Texture/Patterns</Label>
             <Input
               id="texturePatterns"
@@ -190,7 +183,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               placeholder="Specify patterns or textures to be used"
               onChange={(e) => handleInputChange('contentPreferences', 'texturePatterns', e.target.value)}
             />
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="postTheme">Post Theme</Label>
             <Select onValueChange={(value) => handleInputChange('contentPreferences', 'postTheme', value)}>
@@ -240,7 +233,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label>Platform Selection</Label>
             <div className="flex flex-wrap gap-2">
               {['Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'TikTok'].map((platform) => (
@@ -259,7 +252,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="uploadImage">Upload Images</Label>
             <Input
@@ -319,7 +312,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label>Behavioral Data Date Range</Label>
               <div className="flex space-x-2">
                 <Popover>
@@ -361,7 +354,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
+            </div> */}
             <div className="space-y-2">
               <Label>Interests/Preferences</Label>
               <div className="flex flex-wrap gap-2">
@@ -382,7 +375,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
                 ))}
               </div>
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="engagementData">Engagement Data</Label>
               <Textarea
                 id="engagementData"
@@ -390,7 +383,7 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
                 value={formData.customerData.engagementData || ''}
                 onChange={(e) => handleInputChange('customerData', 'engagementData', e.target.value)}
               />
-            </div>
+            </div> */}
             <div className="space-y-2">
               <Label>Preferred Channels</Label>
               <div className="flex flex-wrap gap-2">
@@ -569,6 +562,19 @@ export function FormStep({ step, formData, handleInputChange }: FormStepProps) {
                 </div>
             </div>
           )
+          case 7:
+            return(
+              <div className="space-y-2">
+              <Label htmlFor="additionalItems">Post Notification</Label>
+              <Input
+                id="additionalItems"
+                type="text"
+                placeholder="Specify any objects to be included"
+                onChange={(e) => handleInputChange('contentPreferences', 'PostNotification', e.target.value)}
+              />
+            </div>
+            )
+            
     // ... (other cases remain the same)
     default:
       return null

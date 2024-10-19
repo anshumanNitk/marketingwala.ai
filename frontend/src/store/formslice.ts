@@ -4,23 +4,17 @@ export interface FormData {
   contentPreferences: {
     purpose: string;
     scriptDescription: string;
-    characters: string;
-    styleDetails: string;
-    backgroundInfo: string;
     additionalItems: string;
     inPostText: string;
     template: string;
-    visualAesthetic: string;
-    colorScheme: string;
-    typography: string;
-    texturePatterns: string;
     postTheme: string;
     tone: string;
     contentType: string;
     targetAudience: string;
     creativeStyle: string;
     personalization: string[];
-    uploadedImages: string[];  // Changed from File[] to string[]
+    uploadedImages: string[];
+    PostNotification: string;
   };
   campaignScheduling: {
     startDate: Date | null;
@@ -35,11 +29,10 @@ export interface FormData {
     demographics: string[];
     behaviorDateRange: { start: Date | null; end: Date | null };
     interests: string[];
-    engagementData: string;
     preferredChannels: string[];
   };
   brandGuidelines: {
-    logo: File | null;  // Changed from File | null to string | null
+    logo: File | null;
     colors: string;
     tone: string;
     fonts: string;
@@ -51,23 +44,17 @@ export const initialState: FormData = {
   contentPreferences: {
     purpose: '',
     scriptDescription: '',
-    characters: '',
-    styleDetails: '',
-    backgroundInfo: '',
     additionalItems: '',
     inPostText: '',
     template: '',
-    visualAesthetic: '',
-    colorScheme: '',
-    typography: '',
-    texturePatterns: '',
     postTheme: '',
     tone: '',
     contentType: '',
     targetAudience: '',
     creativeStyle: '',
     personalization: [],
-    uploadedImages: []  // Use Base64 strings here
+    uploadedImages: [],  // Use Base64 strings here
+    PostNotification: ''
   },
   campaignScheduling: {
     startDate: null,
@@ -82,7 +69,6 @@ export const initialState: FormData = {
     demographics: [],
     behaviorDateRange: { start: null, end: null },
     interests: [],
-    engagementData: '',
     preferredChannels: []
   },
   brandGuidelines: {

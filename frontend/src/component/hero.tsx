@@ -31,6 +31,9 @@ const GlassCard: React.FC<GlassCardProps> = ({ index, cardCount }) => {
   );
 };
 
+
+
+
 const Carousel3D = () => {
   const cardCount = 10; // Number of cards
   const rotationSpeed = 40; // Speed of rotation

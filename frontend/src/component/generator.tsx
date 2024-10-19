@@ -355,7 +355,7 @@ export default function Generator() {
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={closeModal} />
           <div className="relative z-50">
             <MarketingCampaignInputForm
-              steps={[2]}
+              steps={[2,7]}
               onClose={closeModal}
               onCampaignDataSubmit={handleNotificationFetchSubmit}
             />

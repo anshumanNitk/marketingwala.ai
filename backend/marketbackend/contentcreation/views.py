@@ -3,9 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
-from .models import scheduleData
+from .models import scheduleData,NotificationSchedulaData
 from .serializers import CampaignSerializer
-from .serializers import ScheduleDataSerializer
+from .serializers import ScheduleDataSerializer,ScheduleNotificationSerializer
 import base64
 from io import BytesIO
 from PIL import Image
@@ -15,6 +15,7 @@ import firebase_admin
 from firebase_admin import credentials, messaging
 import boto3
 import requests
+
 
 
 def decode_base64_image(encoded_image):
@@ -37,8 +38,9 @@ openai.api_key = settings.OPENAI_API_KEY
 
 class CampaignContentGeneratorView(APIView):
     def post(self, request):
-        
         client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        API_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/9da34f1aeb1cceb708acb4bdf74a6741/ai/run/"
+        headers = {"Authorization": "Bearer cgP5gR39hoGEFXkOJNYISwjDJyIQr4FTXJWV4KJe"}
         
         # Extract data from the request
         content_preferences = request.data.get('contentPreferences', {})
@@ -46,80 +48,75 @@ class CampaignContentGeneratorView(APIView):
         customer_data = request.data.get('customerData', {})
         brand_guidelines = request.data.get('brandGuidelines', {})
         
+        # Handling the uploaded image (base64 encoded)
         uploaded_images = content_preferences.get('uploadedImages', [])
         if uploaded_images:
             base64_image = uploaded_images[0]
-            decoded_image = decode_base64_image(base64_image)
-            image_filename = save_image(decoded_image)  # Save the decoded image
+            decoded_image = base64.b64decode(base64_image.split(",")[1])  # Decode base64 image
+            image_filename = "provided_image.jpeg"
+            with open(image_filename, "wb") as f:
+                f.write(decoded_image)
         else:
             image_filename = "no image provided"
-        
-        
-        
-        
 
-
-        # Build prompts for Variation 1 and 2
+        # Build prompts for Variation 1 and Variation 2
         variation1_prompt = f"""
-    Create a captivating image for a marketing campaign targeting {content_preferences.get('targetAudience', 'a broad audience')}. 
-    This campaign should resonate with their interests in {customer_data.get('interests', 'general topics of interest')}. 
-    The behavior data for this audience spans from {customer_data.get('behaviorDateRange', {}).get('start', 'no start date')} 
-    to {customer_data.get('behaviorDateRange', {}).get('end', 'no end date')}, 
-    and the engagement data is as follows: {customer_data.get('engagementData', 'unspecified')}.
+        Create a captivating image for a marketing campaign with the following content preferences:
+        Purpose: {content_preferences.get('purpose', 'general promotion')}.
+        Script/Description: {content_preferences.get('scriptDescription', 'standard campaign')}.
+        Additional Items: {content_preferences.get('additionalItems', 'props for product enhancement')}.
+        In-Post Text: {content_preferences.get('inPostText', 'Buy now for great value!')}.
+        Template: {content_preferences.get('template', 'default template')}.
+        Post Theme: {content_preferences.get('postTheme', 'product-centric')}.
+        Tone: {content_preferences.get('tone', 'playful and engaging')}.
+        Content Type: {content_preferences.get('contentType', 'image post')}.
+        Target Audience: {content_preferences.get('targetAudience', 'broad audience')}.
+        Creative Style: {content_preferences.get('creativeStyle', 'modern and sleek')}.
+        Personalization: {', '.join(content_preferences.get('personalization', []))}.
 
-    The visuals must comply with brand guidelines: 
-    - put this Logo on right top corner: {'none' if brand_guidelines.get('logo') is None else "no image"}
-    - Colors: {brand_guidelines.get('colors', 'standard brand colors')}
-    - Fonts: {brand_guidelines.get('fonts', 'standard fonts')}
-    - Key Messages: {brand_guidelines.get('keyMessages', 'emphasizing product quality and reliability')}
-    - Tone: {brand_guidelines.get('tone', 'playful and engaging')}
+        This campaign should resonate with their interests in {', '.join(customer_data.get('interests', ['general topics']))}. 
+        The visuals must comply with the following brand guidelines: 
+        - Colors: {brand_guidelines.get('colors', 'standard brand colors')}.
+        - Fonts: {brand_guidelines.get('fonts', 'default fonts')}.
+        - Key Messages: {brand_guidelines.get('keyMessages', 'emphasizing product quality')}.
+        - Tone: {brand_guidelines.get('tone', 'professional yet approachable')}.
+        - Logo: {'none' if brand_guidelines.get('logo') is None else 'add logo at the top-right corner'}.
 
-    For the content, ensure the creative style is {content_preferences.get('creativeStyle', 'modern')}, 
-    focusing on {content_preferences.get('postTheme', 'product-focused')} themes. 
-    Include {content_preferences.get('characters', 'necessary characters')} in the visuals, supported by {content_preferences.get('backgroundInfo', 'relevant background information')}. 
-    Add additional elements like {content_preferences.get('additionalItems', 'props and items to enhance the product')}, 
-    and incorporate the following text in the post: '{content_preferences.get('inPostText', 'high-quality product on display')}'.
-    
-    Ensure the output image have similarities with this: {image_filename}.
+        Ensure the output image has similarities with this: {image_filename}.
 
-    The overall visual aesthetic should be {content_preferences.get('visualAesthetic', 'clean and visually striking')}, 
-    featuring a color scheme of {content_preferences.get('colorScheme', 'on-brand colors')}, 
-    typography: {content_preferences.get('typography', 'aligned with brand fonts')}, 
-    and textures/patterns that follow {content_preferences.get('texturePatterns', 'minimalist style')}. 
-    Make sure to combine text and images to create a compelling visual narrative.
-"""
-        print(variation1_prompt)
-        
-        
-        
+        The behavior data spans from {customer_data.get('behaviorDateRange', {}).get('start', 'no start date')} 
+        to {customer_data.get('behaviorDateRange', {}).get('end', 'no end date')}, 
+        and should be optimized for the following platforms: {', '.join(campaign_scheduling.get('platforms', []))}.
+        """
+
         variation2_prompt = f"""
-    Create a captivating image for a marketing campaign targeting {content_preferences.get('targetAudience', 'a broad audience')}. 
-    This campaign should resonate with their interests in {customer_data.get('interests', 'general topics of interest')}. 
-    The behavior data for this audience spans from {customer_data.get('behaviorDateRange', {}).get('start', 'no start date')} 
-    to {customer_data.get('behaviorDateRange', {}).get('end', 'no end date')}, 
-    the Previous engagement data is as follows: {customer_data.get('engagementData', 'unspecified')}, based on this data try to improve the generation.
+        Create a captivating image for a marketing campaign with the following content preferences:
+        Purpose: {content_preferences.get('purpose', 'special promotion')}.
+        Script/Description: {content_preferences.get('scriptDescription', 'targeted campaign')}.
+        Additional Items: {content_preferences.get('additionalItems', 'props for product enhancement')}.
+        In-Post Text: {content_preferences.get('inPostText', 'Limited time offer!')}.
+        Template: {content_preferences.get('template', 'custom template')}.
+        Post Theme: {content_preferences.get('postTheme', 'event-specific')}.
+        Tone: {content_preferences.get('tone', 'playful and engaging')}.
+        Content Type: {content_preferences.get('contentType', 'video post')}.
+        Target Audience: {content_preferences.get('targetAudience', 'niche audience')}.
+        Creative Style: {content_preferences.get('creativeStyle', 'vibrant and colorful')}.
+        Personalization: {', '.join(content_preferences.get('personalization', []))}.
 
-    The visuals must comply with brand guidelines: 
-    - put this Logo on right top corner: {'none' if brand_guidelines.get('logo') is None else "no image"}
-    - Colors: {brand_guidelines.get('colors', 'standard brand colors')}
-    - Fonts: {brand_guidelines.get('fonts', 'standard fonts')}
-    - Key Messages: {brand_guidelines.get('keyMessages', 'emphasizing product quality and reliability')}
-    - Tone: {brand_guidelines.get('tone', 'playful and engaging')}
+        This campaign should resonate with their interests in {', '.join(customer_data.get('interests', ['specific interests']))}. 
+        The visuals must comply with the following brand guidelines: 
+        - Colors: {brand_guidelines.get('colors', 'on-brand colors')}.
+        - Fonts: {brand_guidelines.get('fonts', 'specific fonts')}.
+        - Key Messages: {brand_guidelines.get('keyMessages', 'highlighting limited-time deals')}.
+        - Tone: {brand_guidelines.get('tone', 'exciting and vibrant')}.
+        - Logo: {'none' if brand_guidelines.get('logo') is None else 'add logo at the top-right corner'}.
 
-    For the content, ensure the creative style is {content_preferences.get('creativeStyle', 'modern')}, 
-    focusing on {content_preferences.get('postTheme', 'product-focused')} themes. 
-    Include {content_preferences.get('characters', 'necessary characters')} in the visuals, supported by {content_preferences.get('backgroundInfo', 'relevant background information')}. 
-    Add additional elements like {content_preferences.get('additionalItems', 'props and items to enhance the product')}, 
-    and incorporate the following text in the post: '{content_preferences.get('inPostText', 'high-quality product on display')}'.
-    
-     Ensure the output image have similarities with this: {image_filename}.
+        Ensure the output image has similarities with this: {image_filename}.
 
-    The overall visual aesthetic should be {content_preferences.get('visualAesthetic', 'clean and visually striking')}, 
-    featuring a color scheme of {content_preferences.get('colorScheme', 'on-brand colors')}, 
-    typography: {content_preferences.get('typography', 'aligned with brand fonts')}, 
-    and textures/patterns that follow {content_preferences.get('texturePatterns', 'minimalist style')}. 
-    Make sure to combine text and images to create a compelling visual narrative.
-"""
+        The behavior data spans from {customer_data.get('behaviorDateRange', {}).get('start', 'no start date')} 
+        to {customer_data.get('behaviorDateRange', {}).get('end', 'no end date')}, 
+        and should be optimized for the following platforms: {', '.join(campaign_scheduling.get('platforms', []))}.
+        """
 
         try:
             # Generate images for Variation 1
@@ -132,16 +129,18 @@ class CampaignContentGeneratorView(APIView):
             )
             image_variation1_urls = [image.url for image in response_variation1.data]
             
-            # Generate caption for Variation 1
-            caption_variation1_prompt = f"Write an engaging Instagram caption for the following: {variation1_prompt}"
-            caption_response1 = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a creative social media marketer."},
-                    {"role": "user", "content": caption_variation1_prompt}
-                ]
-            )
-            caption_variation1 = caption_response1.choices[0].message.content
+            # Generate caption for Variation 1 using Cloudflare AI
+            def run(model, inputs):
+                input = {"messages": inputs}
+                response = requests.post(f"{API_BASE_URL}{model}", headers=headers, json=input)
+                return response.json()
+
+            inputs = [
+                {"role": "system", "content": "generate a 2 line caption.You are a creative social media marketer take this prompt based on script/description, inpost texts and generate hastags."},
+                {"role": "user", "content": f"{variation1_prompt}"}
+            ]
+            output = run("@cf/meta/llama-3-8b-instruct", inputs)
+            caption_variation1 = output['result']['response']
 
             # Generate images for Variation 2
             response_variation2 = client.images.generate(
@@ -153,16 +152,13 @@ class CampaignContentGeneratorView(APIView):
             )
             image_variation2_urls = [image.url for image in response_variation2.data]
 
-            # Generate caption for Variation 2
-            caption_variation2_prompt = f"Write an engaging Instagram caption for the following: {variation2_prompt}"
-            caption_response2 = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a creative social media marketer."},
-                    {"role": "user", "content": caption_variation2_prompt}
-                ]
-            )
-            caption_variation2 = caption_response2.choices[0].message.content
+            # Generate caption for Variation 2 using Cloudflare AI
+            inputs = [
+                {"role": "system", "content": "generate a 2 line caption.You are a creative social media marketer take this prompt based on script/description, inpost texts and generate hastags."},
+                {"role": "user", "content": f"{variation2_prompt}"}
+            ]
+            output = run("@cf/meta/llama-3-8b-instruct", inputs)
+            caption_variation2 = output['result']['response']
 
             # Return the generated content for both variations
             return Response({
@@ -179,7 +175,7 @@ class CampaignContentGeneratorView(APIView):
             error_message = str(e)
             full_traceback = traceback.format_exc()  # Capture the full traceback
             print(f"Error: {error_message}\nTraceback: {full_traceback}")
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
 class SubmitUpdatedCampaignView(APIView):
@@ -232,12 +228,13 @@ class SubmitUpdatedCampaignView(APIView):
         params = {
             "url": f"https://marketwala2.s3.ap-south-1.amazonaws.com/{s3_file_name}",  # URL of the image to be posted
             "caption": f"{request.data.get('caption')}",
-            "access_token": "EAAIGTr46jE8BO7PyhuPKlriiZCfZCjYbf8s79678E5YpwZCIIdP8Uh1oc6PNhdB4ZBZCZB3jqtr6tEebk3bWcPMZBymA7wDg3876Q9hX7tx7vn3ZCbDLEzFVu5T3vsn7YBY0K8UMQNVJEV5ZBU3MfqIrCBLNrOzc8VuZBSe4sceiDgEHXZCZALcSDiXRwcTDzracXA40b8UGeVsr"
+            "access_token": "ehpsqpATS-OwHdCToPkffh:APA91bF_IgAv-x2LgfFRbDkIXvFflCFeVsm5arY90KSvBBYyc6gchS98klTCNGjgzyo6UBEtFdDR1b76hKs8Qj3i-JRlNyFdA51IeZABpWRoDRsAI2aJnc0EIEgcBhJ8SozU3weWi_73"
         }
 
         # Make the POST request
         response = requests.post(url, params=params)
         # Step 5: Save campaign data to the database
+        request.data['imageUrl'] = s3_image_url
         serializer = CampaignSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()  # Save S3 URL with the campaign data
@@ -255,3 +252,123 @@ class FetchCampaignDataView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class FetchNotificationDataView(APIView):
+    def post(self,request):
+        try:
+            client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+            content_preferences = request.data.get('contentPreferences', {})
+            caption_variation1_prompt =  (
+    f"Generate a captivating and engaging push notification message for a social media post. "
+    f"Consider the following key attributes to enhance the campaign:\n"
+    f"- Post Notification: {content_preferences.get('PostNotification', 'Attention-grabbing alert')}. "
+    f"This should quickly capture the user's attention with a clear and strong message.\n"
+    f"- Post Theme: {content_preferences.get('postTheme', 'product-focused')}. "
+    f"Tailor the message to align with the product-centric theme, ensuring the content highlights key features or benefits.\n"
+    f"- Tone: {content_preferences.get('tone', 'playful and engaging')}. "
+    f"Make sure the tone is light-hearted, engaging, and encourages interaction from the audience.\n"
+    "Create a notification message that is concise, action-oriented, and suitable for social media platforms."
+)
+            caption_response1 = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a creative social media marketer. add an indian touch to it with hindi and english mix language."},
+                    {"role": "user", "content": caption_variation1_prompt}
+                ],
+                n=4
+            )
+            messages = [choice.message.content for choice in caption_response1.choices]
+
+
+                
+            return Response({
+                "notifications": messages
+
+            }, status=status.HTTP_200_OK)
+            
+            
+        except Exception as e:
+            error_message = str(e)
+            full_traceback = traceback.format_exc()  # Capture the full traceback
+            print(f"Error: {error_message}\nTraceback: {full_traceback}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+cred = credentials.Certificate(r"C:\Users\Anshuman\OneDrive - National Institute of Technology Karnataka, Surathkal\Desktop\my-hack-prod\backend\marketbackend\contentcreation\marketfcm2-firebase-adminsdk-q4z7u-e91f2f94ef.json")
+firebase_admin.initialize_app(cred)
+
+# This registration token comes from the client FCM SDKs.
+registration_token = 'dDfn7ul4SdirR5qISLlBIO:APA91bEWXUS3pFUPYeofxRj1OD3WhbVE9Zb8zyD3xLWEh0FxXOMnnxmeCPzg-NVnU6B6d1EnD9ZbSQmVDzG5YvdeOLUWWGVMv28K23rSgKZWlmWHkuL_bq1X8w99X6Ii_zgY7BKCaECu'
+
+# Function to send a single push notification
+def sendPush(title, msg, registration_token, dataObject=None):
+    # Create a single message
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title=title,
+            body=msg
+        ),
+        data=dataObject,  # Optional data payload
+        token=registration_token,  # Single registration token
+        android=messaging.AndroidConfig(
+            priority='high'  # Set priority to high for immediate delivery
+        )
+    )
+
+    # Send the message
+    try:
+        response = messaging.send(message)
+        print('Successfully sent message:', response)
+    except Exception as e:
+        print('Error sending message:', e)        
+        
+
+class SendNotificationsView(APIView):
+    def post(self, request):
+        try:
+            # Extract notification data from the request body
+            notification_data = request.data.get("notification", "")
+            
+            if notification_data:
+                # Debug print the notification data
+                print(f"Notification: {notification_data}")
+                
+                # Send push notification using the extracted data
+                serializer = ScheduleNotificationSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()  # Save the validated data to the database
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    print(serializer.errors) 
+                sendPush("New Notification", notification_data, registration_token)
+
+                return Response({
+                    "message": "Notification sent successfully.",
+                    "notification": notification_data
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "error": "No notification data provided."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            error_message = str(e)
+            full_traceback = traceback.format_exc()  # Capture the full traceback
+            print(f"Error: {error_message}\nTraceback: {full_traceback}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+class FetchNotification(APIView):
+
+    def get(self,request):
+        try:
+            # Get all the scheduleData from the database
+            schedule_data = NotificationSchedulaData.objects.all()
+            serializer = ScheduleNotificationSerializer(schedule_data, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            error_message = str(e)
+            full_traceback = traceback.format_exc()  # Capture the full traceback
+            print(f"Error: {error_message}\nTraceback: {full_traceback}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
