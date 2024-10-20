@@ -282,24 +282,25 @@ export default function Generator() {
       {loading && <LoadingSpinner />}
 
       {campaignData && (
-        <div className="bg-white p-4 w-full min-h-screen">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Object.keys(campaignData).map((key) => (
-              <div
-                key={key}
-                className="max-w-xs mx-auto relative"
-                onClick={() => openFormModal(campaignData[key])}
-              >
-                <CampaignCard
-                  imageUrl={campaignData[key].images[0]}
-                  caption={campaignData[key].caption}
-                  onClose={() => setIsModalOpen(false)}
-                />
-              </div>
-            ))}
-          </div>
+  <div className="bg-white p-4 w-full min-h-screen">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"> {/* Increase gap */}
+      {Object.keys(campaignData).map((key) => (
+        <div
+          key={key}
+          className="max-w-xs mx-auto relative"
+          onClick={() => openFormModal(campaignData[key])}
+        >
+          <CampaignCard
+            imageUrl={campaignData[key].images[0]}
+            caption={campaignData[key].caption}
+            onClose={() => setIsModalOpen(false)}
+          />
         </div>
-      )}
+      ))}
+    </div>
+  </div>
+)}
+
 
       {selectedCardData && isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">

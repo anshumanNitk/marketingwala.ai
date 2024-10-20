@@ -7,8 +7,11 @@ load_dotenv()
 
 FCM_TOKEN = os.getenv('FCM_TOKEN')
 
-@worker_task(task_definition_name='test_fcm_endpoint')
-def test_access() -> str:
+@worker_task(task_definition_name='test_fcm_endpoint1ans')
+def test_access22() -> str:
+    load_dotenv()
+
+    FCM_TOKEN = os.getenv('FCM_TOKEN')
     access_token = FCM_TOKEN
     url = 'https://fcm.googleapis.com/v1/projects/marketfcm2/messages:send'
     headers = {

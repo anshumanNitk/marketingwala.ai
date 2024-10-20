@@ -55,7 +55,7 @@ def main():
     task_handler = TaskHandler(configuration=api_config)
     task_handler.start_processes()
     print('worker started successfully  arfath\n')
-    workflow_run = workflow_executor.execute(name="greetingsARF12",version=1)
+    workflow_run = workflow_executor.execute(name="anshuman123",version=1)
 
     
 

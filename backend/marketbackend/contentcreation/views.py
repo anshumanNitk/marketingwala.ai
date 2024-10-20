@@ -16,6 +16,7 @@ from firebase_admin import credentials, messaging
 import boto3
 import requests
 from dotenv import load_dotenv
+from .fcmmanager import sendPush
 
 load_dotenv()
 
@@ -147,11 +148,21 @@ class CampaignContentGeneratorView(APIView):
                 return response.json()
 
             inputs = [
-                {"role": "system", "content": "generate a 2 line caption.You are a creative social media marketer take this prompt based on script/description, inpost texts and generate hastags."},
+                {"role": "system", "content": f"directly give a single 2 line caption with hastagswant i only want a single caption and not waste token in any other word .You are a creative marketing team head"},
                 {"role": "user", "content": f"{variation1_prompt}"}
             ]
             output = run("@cf/meta/llama-3-8b-instruct", inputs)
             caption_variation1 = output['result']['response']
+            
+            # caption_variation1_prompt = f"Write an engaging caption for the following: {variation1_prompt}"
+            # caption_response1 = client.chat.completions.create(
+            #     model="gpt-3.5-turbo",
+            #     messages=[
+            #         {"role": "system", "content": "directly give a single 2 line caption with hastagswant i only want a single caption and not waste token in any other word .You are a creative marketing team head"},
+            #         {"role": "user", "content": caption_variation1_prompt}
+            #     ]
+            # )
+            # caption_variation1 = caption_response1.choices[0].message.content
 
             # Generate images for Variation 2
             response_variation2 = client.images.generate(
@@ -165,11 +176,20 @@ class CampaignContentGeneratorView(APIView):
 
             # Generate caption for Variation 2 using Cloudflare AI
             inputs = [
-                {"role": "system", "content": "generate a 2 line caption.You are a creative social media marketer take this prompt based on script/description, inpost texts and generate hastags."},
+                {"role": "system", "content": "directly give a single 2 line caption with hastagswant i only want a single caption and not waste token in any other word .You are a creative marketing team head"},
                 {"role": "user", "content": f"{variation2_prompt}"}
             ]
             output = run("@cf/meta/llama-3-8b-instruct", inputs)
             caption_variation2 = output['result']['response']
+            # caption_variation2_prompt = f"Write an engaging caption for the following: {variation2_prompt}"
+            # caption_response2 = client.chat.completions.create(
+            #     model="gpt-3.5-turbo",
+            #     messages=[
+            #         {"role": "system", "content": "directly give a single 2 line caption with hastagswant i only want a single caption and not waste token in any other word .You are a creative marketing team head"},
+            #         {"role": "user", "content": caption_variation2_prompt}
+            #     ]
+            # )
+            # caption_variation2 = caption_response2.choices[0].message.content
 
             # Return the generated content for both variations
             return Response({
@@ -304,36 +324,14 @@ class FetchNotificationDataView(APIView):
             print(f"Error: {error_message}\nTraceback: {full_traceback}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        
-cred = credentials.Certificate(r"C:\Users\Anshuman\OneDrive - National Institute of Technology Karnataka, Surathkal\Desktop\my-hack-prod\backend\marketbackend\marketfcm2-firebase-adminsdk-q4z7u-e91f2f94ef.json")
-firebase_admin.initialize_app(cred)
+
+
 
 # This registration token comes from the client FCM SDKs.
 registration_token = FCM_TOKEN
 
-# Function to send a single push notification
-def sendPush(title, msg, registration_token, dataObject=None):
-    # Create a single message
-    message = messaging.Message(
-        notification=messaging.Notification(
-            title=title,
-            body=msg
-        ),
-        data=dataObject,  # Optional data payload
-        token=registration_token,  # Single registration token
-        android=messaging.AndroidConfig(
-            priority='high'  # Set priority to high for immediate delivery
-        )
-    )
-
-    # Send the message
-    try:
-        response = messaging.send(message)
-        print('Successfully sent message:', response)
-    except Exception as e:
-        print('Error sending message:', e)        
+# Function to send a single push notification  
         
-
 class SendNotificationsView(APIView):
     def post(self, request):
         try:
@@ -344,6 +342,13 @@ class SendNotificationsView(APIView):
                 # Debug print the notification data
                 print(f"Notification: {notification_data}")
                 
+                sendPush("hola Amigo!", notification_data, registration_token)
+                
+                send_conductor_data={
+                    "title":"hola Amigo!",
+                    "Notification":notification_data
+                }
+                
                 # Send push notification using the extracted data
                 serializer = ScheduleNotificationSerializer(data=request.data)
                 if serializer.is_valid():
@@ -351,7 +356,6 @@ class SendNotificationsView(APIView):
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else:
                     print(serializer.errors) 
-                sendPush("New Notification", notification_data, registration_token)
 
                 return Response({
                     "message": "Notification sent successfully.",
