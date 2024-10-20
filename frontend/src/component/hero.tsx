@@ -2,107 +2,97 @@
 
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import {dboss} from "../assets"
-import Trypage from "./try";
 import { useNavigate } from "react-router-dom";
-interface GlassCardProps {
-  index: number;
-  cardCount: number;
-}
+import Trypage from "./try";
 
-const GlassCard: React.FC<GlassCardProps> = ({ index, cardCount }) => {
-  const angle = 360 / cardCount; // Spread cards evenly
-  const translateZ = 1100; // Increased distance from the center for depth
-
-  return (
-    <motion.div
-      className="absolute w-[100%] h-[100%] rounded-2xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg border border-white border-opacity-20 shadow-xl"
-      style={{
-        transform: `rotateY(${index * angle}deg) translateZ(${translateZ}px)`,
-      }}
-    >
-    <img 
-    src={dboss} // Image source here, can be static or dynamic
-    alt="Your description" 
-    className="w-[100%] h-[100%] object-cover"
-  />
-      {/* Reflection or Content */}
-    </motion.div>
-  );
-};
-
-
-
-
-const Carousel3D = () => {
-  const cardCount = 10; // Number of cards
-  const rotationSpeed = 40; // Speed of rotation
-
-  return (
-    <motion.div
-      className="relative w-64 h-64 flex justify-center items-center"
-      style={{ perspective: 2000 }} // Increased perspective depth for 3D effect
-    >
-      <motion.div
-        className="relative w-full h-full"
-        animate={{ rotateY: [0, 360] }} // Continuous rotation
-        transition={{
-          repeat: Infinity, // Infinite repetition
-          ease: "linear", // Smooth linear rotation
-          duration: rotationSpeed, // Duration for full rotation
-        }}
-        style={{
-          transformStyle: "preserve-3d", // Preserve 3D transforms
-          transformOrigin: "center", // Center rotation
-        }}
-      >
-        {Array.from({ length: cardCount }).map((_, index) => (
-          <GlassCard key={index} index={index} cardCount={cardCount} />
-        ))}
-      </motion.div>
-    </motion.div>
-  );
-};
+const features = [
+  {
+    title: "Seamless Integration",
+    description:
+      "Effortlessly integrate with your existing tools and systems, making data management and automation a breeze.",
+    icon: "⚡",
+  },
+  {
+    title: "AI-Powered Insights",
+    description:
+      "Leverage advanced AI to get real-time insights that help drive decision-making and optimize your operations.",
+    icon: "🤖",
+  },
+  {
+    title: "Scalable Infrastructure",
+    description:
+      "Easily scale your business with robust and reliable infrastructure that grows with your needs.",
+    icon: "📈",
+  },
+];
 
 export default function Landing() {
   const navigate = useNavigate();
-  
-  const handleOnClick=()=>{
-    
-    navigate('/dashboard');
-  }
+
+  const handleOnClick = () => {
+    navigate("/dashboard");
+  };
+
   return (
     <div className="min-h-screen text-white flex flex-col items-center justify-center">
       <header className="p-4 flex justify-between items-center w-full">
         <ArrowLeft className="w-6 h-6" />
-        <nav className="flex items-center space-x-4">
-          <a href="#" className="text-sm hover:text-gray-300 transition-colors">
+        <nav className="flex items-center space-x-6">
+          <a
+            href="#"
+            className="text-base font-light hover:text-gray-300 transition-colors"
+          >
             Join Us
           </a>
-          <a href="#" className="text-sm hover:text-gray-300 transition-colors">
+          <a
+            href="#"
+            className="text-base font-light hover:text-gray-300 transition-colors"
+          >
             API
           </a>
-          <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-opacity-90 transition-colors" onClick={handleOnClick}>
+          <button
+            className="bg-white text-black px-5 py-2 rounded-full text-base font-semibold hover:bg-opacity-90 transition-colors"
+            onClick={handleOnClick}
+          >
             Try Now
           </button>
         </nav>
       </header>
-      <main className="flex-grow flex flex-col items-center justify-center">
+
+      <main className="flex-grow flex flex-col items-center justify-center px-4 text-center">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-6xl font-serif mb-44 text-center"
+          className="text-7xl font-extrabold tracking-tight mb-10"
         >
-          MarketingWala
+          MarketWala
           <br />
-          <span className="font-sans font-bold">One Stop Solution For Social Media Marketing</span>
+          <span className="font-light text-5xl">by deadAI</span>
         </motion.h1>
-        <div className="w-full flex justify-center items-center mb-12">
-          <Carousel3D />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-6xl mt-12">
+          {features.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.2 }}
+              className="flex flex-col items-center p-8 rounded-lg bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg border border-white border-opacity-20 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
+            >
+              <span className="text-5xl mb-6">{feature.icon}</span>
+              <h2 className="text-2xl font-semibold mb-4 tracking-tight">
+                {feature.title}
+              </h2>
+              <p className="text-base font-light text-gray-300">
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
         </div>
       </main>
-      <footer className="pb-4 flex justify-center">
+
+      <footer className="pb-4 mt-16 flex justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,7 +101,8 @@ export default function Landing() {
           <ChevronDown className="w-6 h-6" />
         </motion.div>
       </footer>
-      <Trypage/>
+
+      <Trypage />
     </div>
   );
 }

@@ -15,6 +15,7 @@ urlpatterns = [
     path('get-image/', FetchCampaignDataView.as_view(), name='fetch-campaign-data'),
     path('generate-Push-Notification/',FetchNotificationDataView.as_view(),name='generate-push-notifications'),
     path('send-notification/',SendNotificationsView.as_view(),name='send-notifications'),
-    path('fetch-notifications/',FetchNotification.as_view(),name='fetch-notifications')
+    path('fetch-notifications/',FetchNotification.as_view(),name='fetch-notifications'),
+    
 
 ]
