@@ -1,6 +1,5 @@
 # MarketingWala
-
-MarketingWala is a platform that automates the creation and execution of AI-powered marketing campaigns. It streamlines social media post generation with AI-generated images and captions, along with scheduling tools. Additionally, it manages push notifications by generating, scheduling, and executing them seamlessly via Firebase Cloud Messaging, making marketing efforts more efficient and impactful.
+MarketingWala, born out of a 24-hour hackathon,   is a platform that automates the creation and execution of AI-powered marketing campaigns. It streamlines social media post generation with AI-generated images and captions, along with scheduling tools. Additionally, it manages push notifications by generating, scheduling, and executing them seamlessly via Firebase Cloud Messaging, making marketing efforts more efficient and impactful.
 
 :star: Star us on GitHub — it motivates us a lot!
 
