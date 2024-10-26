@@ -26,6 +26,10 @@ MarketingWala, born out of a 24-hour hackathon,   is a platform that automates t
 - **Deployment:** AWS S3 for file storage, GoDaddy for DNS
 
 ---
+## Images of MarketingWala
+![marketingWala](https://github.com/user-attachments/assets/546799cd-5f40-4e9c-92b2-154455087f47)
+![Screenshot (159)](https://github.com/user-attachments/assets/2e12e10d-f056-423c-9a7f-44cedcb8a0d7)
+![Screenshot (160)](https://github.com/user-attachments/assets/6b0571af-27e6-4751-a789-d7f068884e1f)
 
 
 ## 🎉 Try It Out  
